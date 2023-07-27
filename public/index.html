@@ -1,8 +1,7 @@
-<div id="message">Connecting...</div>
-
-<br>
+<h2>Pushy AI test client</h2>
+<p>Open multiple clients and observe communication.</p>
 <form id="form" onsubmit="return send()">
-  <input id="input" type="text" name="input"><br><br>
+  <input id="input" type="text" name="input">
   <input type="submit" value="Send">
 </form>
 
@@ -12,10 +11,12 @@
   <button id="up">&uarr;</button>
   <button id="down">&darr;</button>
 </div>
+<br/>
+<div id="messages">Connecting...</div>
 
 <script>
   
-const messageEl = document.querySelector('#message');
+const messageEl = document.querySelector('#messages');
 const inputEl = document.querySelector('#input');
 const leftEl = document.querySelector('#left');
 const rightEl = document.querySelector('#right');
@@ -23,7 +24,6 @@ const downEl = document.querySelector('#down');
 const upEl = document.querySelector('#up');
 
 const wsProtocol = window.location.protocol == "https:" ? "wss" : "ws";
-
 const connection = new WebSocket(`${wsProtocol}://${window.location.hostname}:${window.location.port}`);
 
 connection.onopen = function() {
@@ -36,10 +36,13 @@ connection.onerror = function(e) {
  
 connection.onmessage = function(message) {
   const data = JSON.parse(message.data);
-  if(data.message) 
-    messageEl.innerText = 'Client ' + data.cid + ': ' + data.message;
-  if(data.actions)
-    messageEl.innerText = 'Client ' + data.cid + ': ' + data.actions;
+  messageEl.innerHTML = '<br/>' + messageEl.innerHTML; 
+  if(data.message) { 
+    messageEl.prepend('Client ' + data.cid + ': ' + data.message);
+  }
+  if(data.actions) {
+    messageEl.prepend('Client ' + data.cid + ': ' + data.actions);
+  }
 };
 
   
