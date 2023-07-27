@@ -12,7 +12,6 @@ const server = app.listen(process.env.PORT, () => {
   console.log("Listening on port " + server.address().port);
 });
 
-
 const WebSocket = require("ws");
 const wsServer = new WebSocket.Server({ server });
 
