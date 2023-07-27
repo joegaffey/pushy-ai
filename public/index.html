@@ -1,0 +1,39 @@
+<div id="message">Connecting...</div>
+
+<br>
+<form id="form" onsubmit="return send()">
+  <input id="input" type="text" name="input"><br><br>
+  <input type="submit" value="Send">
+</form> 
+
+
+<script>
+  
+const messageEl = document.querySelector('#message');
+const inputEl = document.querySelector('#input');
+
+const wsProtocol = window.location.protocol == "https:" ? "wss" : "ws";
+
+const connection = new WebSocket(`${wsProtocol}://${window.location.hostname}:${window.location.port}`);
+
+connection.onopen = function() {
+  messageEl.innerText = 'Websocket connected!';
+};
+  
+connection.onerror = function(e) {
+  messageEl.innerText = 'Error';
+};
+ 
+connection.onmessage = function(message) {
+  messageEl.innerText = JSON.parse(message.data).message;
+};
+
+  
+function send() {
+  const message = { message: inputEl.value };
+  connection.send(JSON.stringify(message));
+  inputEl.value = '';
+  return false;
+}
+  
+</script>
