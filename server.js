@@ -26,7 +26,8 @@ function broadcast(data) {
 wsServer.on("connection", ws => {
   ws.id = Date.now();
   console.log('Client connected:', ws.id);
-  // broadcast("Client disconnected:" + ws.id);
+  const message = { cid: ws.id, message: 'Connected!' };
+  broadcast(message);
   
   ws.on("message", data => {
     console.log("Message received from connection Id:", ws.id);
@@ -38,6 +39,7 @@ wsServer.on("connection", ws => {
 
   ws.on("close", () => {
     console.log("Client disconnected:", ws.id);
-    // broadcast("Client disconnected:" + ws.id);
+    const message = { cid: ws.id, message: 'Disconnected!' };
+    broadcast(message);
   });
 });
