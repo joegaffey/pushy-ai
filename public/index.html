@@ -4,13 +4,23 @@
 <form id="form" onsubmit="return send()">
   <input id="input" type="text" name="input"><br><br>
   <input type="submit" value="Send">
-</form> 
+</form>
 
+<div id="buttons">
+  <button id="left">&larr;</button>
+  <button id="right">&rarr;</button>
+  <button id="up">&uarr;</button>
+  <button id="down">&darr;</button>
+</div>
 
 <script>
   
 const messageEl = document.querySelector('#message');
 const inputEl = document.querySelector('#input');
+const leftEl = document.querySelector('#left');
+const rightEl = document.querySelector('#right');
+const downEl = document.querySelector('#down');
+const upEl = document.querySelector('#up');
 
 const wsProtocol = window.location.protocol == "https:" ? "wss" : "ws";
 
@@ -25,7 +35,11 @@ connection.onerror = function(e) {
 };
  
 connection.onmessage = function(message) {
-  messageEl.innerText = JSON.parse(message.data).message;
+  const data = JSON.parse(message.data);
+  if(data.message) 
+    messageEl.innerText = 'Client ' + data.cid + ': ' + data.message;
+  if(data.actions)
+    messageEl.innerText = 'Client ' + data.cid + ': ' + data.actions;
 };
 
   
@@ -34,6 +48,19 @@ function send() {
   connection.send(JSON.stringify(message));
   inputEl.value = '';
   return false;
+}
+  
+leftEl.onclick = () => {
+  connection.send(JSON.stringify({ event: 'action', actions: ['LEFT'] }));
+}
+rightEl.onclick = () => {
+  connection.send(JSON.stringify({ event: 'action', actions: ['RIGHT'] }));
+}
+upEl.onclick = () => {
+  connection.send(JSON.stringify({ event: 'action', actions: ['UP'] }));
+}
+downEl.onclick = () => {
+  connection.send(JSON.stringify({ event: 'action', actions: ['DOWN'] }));
 }
   
 </script>
