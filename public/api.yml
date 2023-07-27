@@ -1,0 +1,242 @@
+asyncapi: 2.6.0
+info:
+  title: Pushy-AI API
+  version: 0.0.1
+  description: >
+    WebSocket API for Pushy-Karts remote AI agents.
+
+servers:
+  public:
+    url: ws.pushy-ai.glitch.me
+    protocol: wss
+    description: >
+      Websocket API server for Pushy-Karts remote AI agents.
+      Once the socket is open, an AI can request level information, receive game state updates and send kart driving actions.
+
+channels:
+  /:
+    publish:
+      description: Send messages to the API
+      message:
+        oneOf:
+          - $ref: "#/components/messages/actions"
+          - $ref: "#/components/messages/levelRequest"
+    subscribe:
+      description: Messages that you receive from the API
+      message:
+        oneOf:
+          - $ref: "#/components/messages/gameState"
+          - $ref: "#/components/messages/levelInfo"
+          - $ref: "#/components/messages/collisions"
+
+components:
+  messages:
+    actions:
+      summary: Game actions
+      description: >-
+        Send an action to the game to control the kart.
+      payload:
+        $ref: "#/components/schemas/actions"
+      examples:
+        - payload:
+            event: actions
+            actions:
+              - FORWARD
+              - LEFT
+    levelRequest:
+      summary: Level info request
+      description: >-
+        Send a level info request to the game.
+      payload:
+        $ref: "#/components/schemas/levelRequest"
+      x-response:
+        $ref: "#/components/messages/levelInfo"
+      examples:
+        - payload:
+            event: levelRequest
+    levelInfo:
+      summary: Level info
+      description: >-
+        Server levelInfo response to a levelRequest message
+      payload:
+        $ref: "#/components/schemas/levelInfo"
+      examples:
+        - payload:
+            event: levelInfo
+            platformDims: "[...]"
+            hasWalls: true
+            obstacles:
+              - x: 0
+                y: 0
+                z: 1
+              - x: 1
+                y: 0
+                z: 1
+            goalZones:
+              - x: 0
+                y: 0
+                z: 1
+              - x: 1
+                y: 0
+                z: 1
+            zoneDims: "[...]"
+    gameState:
+      summary: Game state
+      description: >-
+        State of the current game
+      payload:
+        $ref: "#/components/schemas/gameState"
+      examples:
+        - payload:
+            event: gameState
+            boxes:
+              - x: 0
+                y: 0
+                z: 1
+              - x: 1
+                y: 0
+                z: 1
+            enemyKarts:
+              - position:
+                  x: 0
+                  y: 0
+                  z: 0
+                direction: 1.78
+                velocity: 20
+              - position:
+                  x: 1
+                  y: 0
+                  z: 0
+                direction: 1.78
+                velocity: 20
+            kart:
+              position:
+                x: 1
+                y: 1
+                z: 1
+              direction: 1.78
+              velocity: 20
+    collisions:
+      summary: Current collisions
+      description: >-
+        Objects that the AI kart is currently in contact with
+      payload:
+        $ref: "#/components/schemas/collisions"
+      examples:
+        - payload:
+            event: collisions
+            collisions:
+              - type: WALL
+                position:
+                  x: 1
+                  y: 1
+                  z: 1
+  schemas:
+    actions:
+      type: object
+      properties:
+        event:
+          type: string
+          const: actions
+        actions:
+          type: array
+          items:
+            enum:
+              - FORWARD
+              - BACKWARD
+              - LEFT
+              - RIGHT
+              - STOP
+      required:
+        - event
+        - actions
+    levelRequest:
+      type: object
+      properties:
+        event:
+          type: string
+          const: levelRequest
+      required:
+        - event
+    levelInfo:
+      type: object
+      properties:
+        event:
+          type: string
+          const: levelInfo
+        platformDims:
+          type: string
+        hasWalls:
+          type: boolean
+        obstacles:
+          type: array
+          items:
+            $ref: "#/components/schemas/position"
+        goalZones:
+          type: array
+          items:
+            $ref: "#/components/schemas/position"
+        zoneDims:
+          type: string
+      required:
+        - event
+        - platformDims
+        - hasWalls
+        - obstacles
+        - goalZones
+        - zoneDims
+    gameState:
+      type: object
+      properties:
+        event:
+          type: string
+          const: gameState
+        boxes:
+          type: array
+          items:
+            $ref: "#/components/schemas/position"
+        enemyKarts:
+          type: array
+          items:
+            $ref: "#/components/schemas/kart"
+        kart:
+          type: object
+          $ref: "#/components/schemas/kart"
+      required:
+        - event
+        - boxes
+        - enemyKarts
+        - kart
+    kart:
+      type: object
+      properties:
+        position:
+          $ref: "#/components/schemas/position"
+        direction:
+          type: number
+        velocity:
+          type: number
+    collisions:
+      array:
+        items:
+          $ref: "#/components/schemas/collision"
+    collision:
+      type: object
+      properties:
+        type:
+          enum:
+            - WALL
+            - KART
+            - BOX
+            - OBSTACLE
+        position:
+          $ref: "#/components/schemas/position"
+    position:
+      type: object
+      properties:
+        x:
+          type: number
+        y:
+          type: number
+        z:
+          type: number
