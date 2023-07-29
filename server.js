@@ -73,7 +73,7 @@ wss1.on('connection', function connection(ws) {
   
   ws.on('message', data => {
     const message = JSON.parse(data);
-    broadcast(wss1, lefty.actions);
+    broadcast(wss1, lefty.getActions());
   });
 });
 
@@ -84,7 +84,7 @@ wss2.on('connection', function connection(ws) {
 
   ws.on('message', data => {
     const message = JSON.parse(data);
-    broadcast(wss2, righty.actions);
+    broadcast(wss2, righty.getActions());
   });
 });
 

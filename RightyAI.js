@@ -4,6 +4,10 @@ export default class RightyAI {
     this.actions = ['FORWARD', 'RIGHT'];
   }
   
+  getActions() {
+    return this.actions;
+  }
+  
   setGameState(state) {
     // ... 
   }

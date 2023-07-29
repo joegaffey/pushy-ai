@@ -4,6 +4,10 @@ export default class LeftyAI {
     this.actions = ['FORWARD', 'LEFT'];
   }
   
+  getActions() {
+    return this.actions;
+  }
+  
   setGameState(state) {
     // ... 
   }
