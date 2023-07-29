@@ -23,9 +23,11 @@ const rightEl = document.querySelector('#right');
 const downEl = document.querySelector('#down');
 const upEl = document.querySelector('#up');
 
-const wsProtocol = window.location.protocol == "https:" ? "wss" : "ws";
-const connection = new WebSocket(`${wsProtocol}://${window.location.hostname}:${window.location.port}`);
-
+const wsProtocol = window.location.protocol == "https:" ? "wss" : "ws";  
+const url = `${wsProtocol}://${window.location.hostname}:${window.location.port}`;
+console.log(`Connecting to: ${url}`);
+const connection = new WebSocket(url);
+    
 connection.onopen = function() {
   messageEl.innerText = 'Websocket connected!';
 };
