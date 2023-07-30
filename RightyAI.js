@@ -8,15 +8,19 @@ export default class RightyAI {
     return this.actions;
   }
   
-  setGameState(state) {
+  setStaticWorldState(state) {
     // ... 
+  }
+  
+  setDynamicWorldState(state) {
+    // ... 
+  }
+  
+  setDeltaWorldState(state) {
+    // ...   
   }
   
   setCollisions(collisions) {
-    // ... 
-  }
-  
-  setLevelInfo(levelInfo) {
     // ... 
   }
 }
