@@ -1,40 +1,40 @@
 asyncapi: 2.6.0
 info:
   title: Pushy-AI API
-  version: 0.0.1
+  version: 0.0.2
   description: >
-    WebSocket API for Pushy-Karts remote AI agents.
+    WebSocket API for Pushy-AI physically based remote AI agents. Pushy-AI agents may be used to control Digital Twin simulations and real-world robots. Use this API to send state to the AI and receive AI actions.
 
 servers:
   public:
     url: ws.pushy-ai.glitch.me
     protocol: wss
     description: >
-      Websocket API server for Pushy-Karts remote AI agents.
-      Once the socket is open, an AI can request level information, receive game state updates and send kart driving actions.
+      Websocket API server for Pushy-AI physically based remote AI agents.
+      Once the socket is open, an AI can request world state information, receive world state updates and send AI actions.
 
 channels:
   /:
-    publish:
-      description: Send messages to the API
+    subscribe:
+      description: Receive these messages from the API
       message:
         oneOf:
           - $ref: "#/components/messages/actions"
-          - $ref: "#/components/messages/levelRequest"
-    subscribe:
-      description: Messages that you receive from the API
+          - $ref: "#/components/messages/stateRequest"
+    publish:
+      description: Send these messages to the API
       message:
         oneOf:
-          - $ref: "#/components/messages/gameState"
-          - $ref: "#/components/messages/levelInfo"
+          - $ref: "#/components/messages/dynamicState"
+          - $ref: "#/components/messages/staticState"
           - $ref: "#/components/messages/collisions"
 
 components:
   messages:
     actions:
-      summary: Game actions
+      summary: AI actions
       description: >-
-        Send an action to the game to control the kart.
+        Send an action to the simulation.
       payload:
         $ref: "#/components/schemas/actions"
       examples:
@@ -43,90 +43,125 @@ components:
             actions:
               - FORWARD
               - LEFT
-    levelRequest:
-      summary: Level info request
+    stateRequest:
+      summary: World state request
       description: >-
-        Send a level info request to the game.
+        Use this message to request a world state update.
       payload:
-        $ref: "#/components/schemas/levelRequest"
+        $ref: "#/components/schemas/stateRequest"
       x-response:
-        $ref: "#/components/messages/levelInfo"
+        $ref: "#/components/messages/staticState"
       examples:
         - payload:
-            event: levelRequest
-    levelInfo:
-      summary: Level info
+            event: stateRequest
+    staticState:
+      summary: Static world state i.e. information about world fixtures.
       description: >-
-        Server levelInfo response to a levelRequest message
+        staticState response to a stateRequest message
       payload:
-        $ref: "#/components/schemas/levelInfo"
+        $ref: "#/components/schemas/staticObject"
       examples:
         - payload:
-            event: levelInfo
-            platformDims: "[...]"
-            hasWalls: true
-            obstacles:
-              - x: 0
-                y: 0
-                z: 1
-              - x: 1
-                y: 0
-                z: 1
-            goalZones:
-              - x: 0
-                y: 0
-                z: 1
-              - x: 1
-                y: 0
-                z: 1
-            zoneDims: "[...]"
-    gameState:
-      summary: Game state
-      description: >-
-        State of the current game
-      payload:
-        $ref: "#/components/schemas/gameState"
-      examples:
-        - payload:
-            event: gameState
-            boxes:
-              - x: 0
-                y: 0
-                z: 1
-              - x: 1
-                y: 0
-                z: 1
-            enemyKarts:
-              - position:
+            event: staticState
+            objects:
+              - id: 0
+                label: 'wall'
+                type: 'wall'
+                position:
+                  x: 100
+                  y: 0
+                  z: 100
+                orientation:
                   x: 0
                   y: 0
                   z: 0
-                direction: 1.78
-                velocity: 20
-              - position:
-                  x: 1
+                size:
+                  x: 5
+                  y: 20
+                  z: 200
+              - id: 1
+                label: 'playerZone'
+                type: 'zone'
+                position:
+                  x: 100
+                  y: 0
+                  z: 100
+                orientation:
+                  x: 0
                   y: 0
                   z: 0
-                direction: 1.78
-                velocity: 20
-            kart:
-              position:
-                x: 1
-                y: 1
-                z: 1
-              direction: 1.78
-              velocity: 20
+                size:
+                  x: 5
+                  y: 20
+                  z: 200
+    dynamicState:
+      summary: Dynamic world state
+      description: >-
+        Current state of dynamic objects in the world
+      payload:
+        $ref: "#/components/schemas/dynamicState"
+      examples:
+        - payload:
+            event: dynamicState
+            objects:
+              - id: '0'
+                type: kart
+                label: playerKart
+                position:
+                  x: 1
+                  y: 0
+                  z: 1
+                orientation:
+                  x: 0
+                  y: 0
+                  z: 0
+                velocity: 
+                  x: 0
+                  y: 0
+                  z: 0
+                speed: 0
+              - id: '1'
+                type: kart
+                label: enemyKart
+                position:
+                  x: 1
+                  y: 0
+                  z: 1
+                orientation:
+                  x: 0
+                  y: 0
+                  z: 0
+                velocity: 
+                  x: 0
+                  y: 0
+                  z: 0
+                speed: 0
+              - id: '2'
+                type: box
+                label: box
+                position:
+                  x: 1
+                  y: 0
+                  z: 1
+                orientation:
+                  x: 0
+                  y: 0
+                  z: 0
+                velocity: 
+                  x: 0
+                  y: 0
+                  z: 0
     collisions:
       summary: Current collisions
       description: >-
-        Objects that the AI kart is currently in contact with
+        Objects that the AI object is currently in contact with.         Collision messages include the world object in collision with the AI object and the position of the collision contact point.
       payload:
         $ref: "#/components/schemas/collisions"
       examples:
         - payload:
             event: collisions
             collisions:
-              - type: WALL
+              - type: wall
                 position:
                   x: 1
                   y: 1
@@ -140,82 +175,47 @@ components:
           const: actions
         actions:
           type: array
-          items:
-            enum:
-              - FORWARD
-              - BACKWARD
-              - LEFT
-              - RIGHT
-              - STOP
+          items: 
+            $ref: "#/components/schemas/action"
       required:
         - event
         - actions
-    levelRequest:
+    action:
+      type: string
+    stateRequest:
       type: object
       properties:
         event:
           type: string
-          const: levelRequest
+          const: stateRequest
       required:
         - event
-    levelInfo:
+    staticState:
       type: object
       properties:
         event:
           type: string
-          const: levelInfo
-        platformDims:
-          type: string
-        hasWalls:
-          type: boolean
-        obstacles:
+          const: staticState
+        objects:
           type: array
           items:
-            $ref: "#/components/schemas/position"
-        goalZones:
-          type: array
-          items:
-            $ref: "#/components/schemas/position"
-        zoneDims:
-          type: string
+            $ref: "#/components/schemas/staticObject"
       required:
         - event
-        - platformDims
-        - hasWalls
-        - obstacles
-        - goalZones
-        - zoneDims
-    gameState:
+        - objects
+    dynamicState:
       type: object
       properties:
         event:
           type: string
-          const: gameState
-        boxes:
+          const: dynamicState
+        objects:
           type: array
           items:
-            $ref: "#/components/schemas/position"
-        enemyKarts:
-          type: array
-          items:
-            $ref: "#/components/schemas/kart"
-        kart:
-          type: object
-          $ref: "#/components/schemas/kart"
+            $ref: "#/components/schemas/dynamicObject"
       required:
         - event
-        - boxes
-        - enemyKarts
-        - kart
-    kart:
-      type: object
-      properties:
-        position:
-          $ref: "#/components/schemas/position"
-        direction:
-          type: number
-        velocity:
-          type: number
+        - objects
     collisions:
       array:
         items:
@@ -223,15 +223,11 @@ components:
     collision:
       type: object
       properties:
-        type:
-          enum:
-            - WALL
-            - KART
-            - BOX
-            - OBSTACLE
+        with: 
+          $ref: "#/components/schemas/dynamicObject"
         position:
-          $ref: "#/components/schemas/position"
-    position:
+          $ref: "#/components/schemas/vector3"
+    vector3:
       type: object
       properties:
         x:
@@ -240,3 +236,29 @@ components:
           type: number
         z:
           type: number
+    dynamicObject:
+      type: object
+      properties:
+        id: 
+          type: string
+        label: 
+          type: string
+        position:
+          $ref: "#/components/schemas/vector3"
+        orientation:
+          $ref: "#/components/schemas/vector3"
+        velocity:
+          $ref: "#/components/schemas/vector3"
+    staticObject:
+      type: object
+      properties:
+        id: 
+          type: string
+        label: 
+          type: string
+        position:
+          $ref: "#/components/schemas/vector3"
+        orientation:
+          $ref: "#/components/schemas/vector3"
+        size:
+          $ref: "#/components/schemas/vector3"
