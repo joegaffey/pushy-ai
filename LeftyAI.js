@@ -9,18 +9,18 @@ export default class LeftyAI {
   }
   
   setStaticWorldState(state) {
-    // ... 
+    console.log('Received static state:\n' + JSON.stringify(state));
   }
   
   setDynamicWorldState(state) {
-    // ... 
+    // console.log(JSON.stringify(state));
   }
   
   setDeltaWorldState(state) {
-    // ...   
+    // console.log(JSON.stringify(state));
   }
   
   setCollisions(collisions) {
-    // ... 
+    // console.log(JSON.stringify(collisions));
   }
 }

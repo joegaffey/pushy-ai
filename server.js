@@ -62,7 +62,6 @@ wsServer.on("connection", ws => {
 
 
 // AI socket servers
-
 const wss1 = new WebSocketServer({ noServer: true });
 const wss2 = new WebSocketServer({ noServer: true });
 
@@ -73,6 +72,10 @@ wss1.on('connection', function connection(ws) {
   
   ws.on('message', data => {
     const message = JSON.parse(data);
+    if(message.event === 'dynamicState')
+      lefty.setDynamicWorldState(message.objects);
+    if(message.event === 'staticState')
+      lefty.setStaticWorldState(message.objects);
     broadcast(wss1, lefty.getActions());
   });
 });
