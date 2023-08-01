@@ -9,7 +9,7 @@ export default class RightyAI {
   }
   
   setStaticWorldState(state) {
-    // ... 
+    console.log('Righty: Received static state:\n' + JSON.stringify(state));
   }
   
   setDynamicWorldState(state) {
