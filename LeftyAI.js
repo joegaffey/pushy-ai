@@ -9,7 +9,7 @@ export default class LeftyAI {
   }
   
   setStaticWorldState(state) {
-    console.log('Received static state:\n' + JSON.stringify(state));
+    console.log('Lefty: Received static state:\n' + JSON.stringify(state));
   }
   
   setDynamicWorldState(state) {
