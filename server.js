@@ -1,4 +1,3 @@
-// import WebSocket from 'ws';
 import { createServer } from 'http';
 import { parse } from 'url';
 import { WebSocketServer } from 'ws';
@@ -33,10 +32,7 @@ function broadcast(server, data) {
   });
 }
 
-// Test client server
-
-// const wsServer = new WebSocketServer({ server });
-
+// Test client ws server
 const wsServer = new WebSocketServer({ noServer: true });
 
 wsServer.on("connection", ws => {
@@ -60,56 +56,70 @@ wsServer.on("connection", ws => {
   });
 });
 
+const aiList = [
+  {
+    name: 'Lefty',
+    agent: new LeftyAI(),
+    messageCount: 0
+  },
+  {
+    name: 'Righty',
+    agent: new RightyAI(),
+    messageCount: 0
+  }
+];
 
 // AI socket servers
-const wss1 = new WebSocketServer({ noServer: true });
-const wss2 = new WebSocketServer({ noServer: true });
+const wsServers = [];
 
-wss1.on('connection', function connection(ws) {
-  const lefty = new LeftyAI();
-  
-  ws.on('error', console.error);
-  
-  ws.on('message', data => {
-    const message = JSON.parse(data);
-    if(message.event === 'dynamicState')
-      lefty.setDynamicWorldState(message.objects);
-    if(message.event === 'staticState')
-      lefty.setStaticWorldState(message.objects);
-    broadcast(wss1, lefty.getActions());
+aiList.forEach(ai => {
+  const wss = new WebSocketServer({ noServer: true });
+  ai.wss = wss;
+  wss.on('connection', function connection(ws) {
+    console.log(ai.name + ': Connected');
+    
+    ws.on('error', console.error);
+    
+    ws.on('close', () => console.log(ai.name + ': Disconnected'));
+
+    ws.on('message', data => {
+      const message = JSON.parse(data);
+      if(message.event === 'dynamicState') {
+        ai.agent.setDynamicWorldState(message.objects);
+        ai.messageCount++;
+        if(ai.messageCount % 1000 === 0)
+          console.log(`${ai.name}: Received ${ai.messageCount / 1000}K world updates`);
+      }
+      if(message.event === 'staticState')
+        ai.agent.setStaticWorldState(message.objects);
+      broadcast(wss, ai.agent.getActions());
+    });
   });
-});
-
-wss2.on('connection', function connection(ws) {
-  const righty = new RightyAI();
-  
-  ws.on('error', console.error);
-
-  ws.on('message', data => {
-    const message = JSON.parse(data);
-    broadcast(wss2, righty.getActions());
-  });
+  wsServers.push(wss);
 });
 
 server.on('upgrade', function upgrade(request, socket, head) {
   const { pathname } = url.parse(request.url);
-
-  if (pathname === '/Lefty') {
-    console.log('Go lefty!');
-    wss1.handleUpgrade(request, socket, head, function done(ws) {
-      wss1.emit('connection', ws, request);
-    });
-  } 
-  else if (pathname === '/Righty') {
-    console.log('Go righty!');
-    wss2.handleUpgrade(request, socket, head, function done(ws) {
-      wss2.emit('connection', ws, request);
-    });
-  }
-  else {
-    console.log('Conection!');
+  
+  if(pathname === '/') {
     wsServer.handleUpgrade(request, socket, head, function done(ws) {
       wsServer.emit('connection', ws, request);
     });
+  }
+  else {
+    const aiName = pathname.split('/')[1];
+
+    const result = aiList.filter(ai => {
+      return ai.name === aiName;
+    });
+
+    const ai = result[0];
+
+    if(ai) {
+      console.log(ai.name + ': Upgrading WS connection...');
+      ai.wss.handleUpgrade(request, socket, head, function done(ws) {
+        ai.wss.emit('connection', ws, request);
+      });
+    }
   }
 });
