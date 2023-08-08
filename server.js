@@ -84,11 +84,11 @@ aiList.forEach(ai => {
 
     ws.on('message', data => {
       const message = JSON.parse(data);
-      if(message.event === 'dynamicState') {
-        ai.agent.setDynamicWorldState(message.objects);
+      if(message.event === 'dynamicState') {        
         ai.messageCount++;
         if(ai.messageCount % 1000 === 0)
           console.log(`${ai.name}: Received ${ai.messageCount / 1000}K world updates`);
+        ai.agent.setDynamicWorldState(message.objects);
       }
       if(message.event === 'staticState')
         ai.agent.setStaticWorldState(message.objects);
