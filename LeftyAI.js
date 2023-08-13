@@ -2,6 +2,7 @@ export default class LeftyAI {
   
   constructor() {
     this.actions = ['FORWARD', 'LEFT'];
+    console.log('Lefty: Starting');
   }
   
   getActions() {
