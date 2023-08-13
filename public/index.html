@@ -1,17 +1,20 @@
-<h2>Pushy AI test client</h2>
-<p>Open multiple clients and observe communication.</p>
-<form id="form" onsubmit="return send()">
-  <input id="input" type="text" name="input">
-  <input type="submit" value="Send">
-</form>
+<h2>Pushy Turk</h2>
 
+<p>Controls:</p>
 <div id="buttons">
   <button id="left">&larr;</button>
   <button id="right">&rarr;</button>
   <button id="up">&uarr;</button>
   <button id="down">&darr;</button>
 </div>
+
+<p>Chat:</p>
+<form id="form" onsubmit="return send()">
+  <input id="input" type="text" name="input">
+  <input type="submit" value="Send">
+</form>
 <br/>
+
 <div id="messages">Connecting...</div>
 
 <script>
@@ -33,7 +36,7 @@ connection.onopen = function() {
 };
   
 connection.onerror = function(e) {
-  messageEl.innerText = 'Error';
+  messageEl.innerText = 'Error!';
 };
  
 connection.onmessage = function(message) {

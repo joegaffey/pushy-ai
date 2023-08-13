@@ -1,8 +1,8 @@
-export default class LeftyAI {
+export default class Turk {
   
   constructor() {
-    this.actions = ['FORWARD', 'LEFT'];
-    console.log('Lefty: Starting');
+    this.actions = [];
+    console.log('Turk: Starting');
   }
   
   getActions() {
@@ -10,7 +10,7 @@ export default class LeftyAI {
   }
   
   setStaticWorldState(state) {
-    console.log('Lefty: Received static state:\n' + JSON.stringify(state));
+    console.log('Turk: Received static state:\n' + JSON.stringify(state));
   }
   
   setDynamicWorldState(state) {
