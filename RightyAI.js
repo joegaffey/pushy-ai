@@ -2,6 +2,7 @@ export default class RightyAI {
   
   constructor() {
     this.actions = ['FORWARD', 'RIGHT'];
+    console.log('Righty: Starting');
   }
   
   getActions() {
