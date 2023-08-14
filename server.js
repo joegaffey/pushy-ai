@@ -6,8 +6,8 @@ import cors from 'cors';
 import url from 'node:url';
 
 import aiList from './aiList.js';
-// import Turk from './Turk.js';
 import turkWsServer from './TurkServer.js';
+import TurkAI from './TurkAI.js';
 
 const app = express();
 
@@ -64,8 +64,14 @@ aiList.forEach(ai => {
 server.on('upgrade', function upgrade(request, socket, head) {
   const { pathname } = url.parse(request.url);
   
-  if(pathname === '/') {
+  if(pathname === '/driver') {
     turkWsServer.handleUpgrade(request, socket, head, function done(ws) {
+      ws.ai = new TurkAI();
+      const driver = turkWsServer.getDriver();
+      if(driver)
+        ws.ai.driver = turkWsServer.getDriver();
+      else
+        console.log('Turk driver unavailable!')
       turkWsServer.emit('connection', ws, request);
     });
   }
