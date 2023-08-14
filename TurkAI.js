@@ -1,4 +1,4 @@
-export default class Turk {
+export default class TurkAI {
   
   constructor() {
     this.actions = [];
