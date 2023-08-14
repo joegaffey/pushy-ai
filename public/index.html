@@ -27,7 +27,7 @@ const downEl = document.querySelector('#down');
 const upEl = document.querySelector('#up');
 
 const wsProtocol = window.location.protocol == "https:" ? "wss" : "ws";  
-const url = `${wsProtocol}://${window.location.hostname}:${window.location.port}`;
+const url = `${wsProtocol}://${window.location.hostname}:${window.location.port}/driver`;
 console.log(`Connecting to: ${url}`);
 const connection = new WebSocket(url);
     
