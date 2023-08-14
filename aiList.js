@@ -11,7 +11,7 @@ const aiList = [
   },
   {
     name: 'Turk',
-    agent:  'Turk.js',
+    agent:  'TurkAI.js',
     messageCount: 0
   }
 ];
