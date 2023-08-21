@@ -28,6 +28,8 @@ const server = app.listen(process.env.PORT, () => {
 // AI socket servers
 const wsServers = [];
 
+const turkList = [];
+
 aiList.forEach(ai => {
   import('./' + ai.agent).then((module) => {
     ai.module = module;
@@ -38,8 +40,14 @@ aiList.forEach(ai => {
   ai.wss = wss;
   wss.on('connection', function connection(ws) {
     ws.ai = new ai.module.default();
+    ws.ai.name = ai.name;
     
-    console.log(ai.name + ': Connected');
+    console.log(ws.ai.name + ': Connected');
+    
+    if(ai.name === 'Turk') {
+      console.log(ws.ai)
+      turkList.push(ws.ai);
+    }
     
     ws.on('error', console.error);
     
@@ -66,12 +74,14 @@ server.on('upgrade', function upgrade(request, socket, head) {
   
   if(pathname === '/driver') {
     turkWsServer.handleUpgrade(request, socket, head, function done(ws) {
-      ws.ai = new TurkAI();
-      const driver = turkWsServer.getDriver();
-      if(driver)
-        ws.ai.driver = turkWsServer.getDriver();
-      else
-        console.log('Turk driver unavailable!')
+      if(turkList.length > 0) {
+        ws.ai = turkList.pop();
+        const driver = turkWsServer.getDriver();
+        if(driver)
+          ws.ai.driver = driver;
+        else
+          console.log('Turk driver unavailable!')
+      }
       turkWsServer.emit('connection', ws, request);
     });
   }
