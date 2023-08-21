@@ -6,6 +6,7 @@
   <button id="right">&rarr;</button>
   <button id="up">&uarr;</button>
   <button id="down">&darr;</button>
+  <button id="brake">.</button>
 </div>
 
 <p>Chat:</p>
@@ -25,6 +26,7 @@ const leftEl = document.querySelector('#left');
 const rightEl = document.querySelector('#right');
 const downEl = document.querySelector('#down');
 const upEl = document.querySelector('#up');
+const brakeEl = document.querySelector('#brake');
 
 const wsProtocol = window.location.protocol == "https:" ? "wss" : "ws";  
 const url = `${wsProtocol}://${window.location.hostname}:${window.location.port}/driver`;
@@ -61,16 +63,19 @@ function send() {
 }
   
 leftEl.onclick = () => {
-  connection.send(JSON.stringify({ event: 'action', actions: ['LEFT'] }));
+  connection.send(JSON.stringify({ event: 'action', actions: ['FORWARD', 'LEFT'] }));
 }
 rightEl.onclick = () => {
-  connection.send(JSON.stringify({ event: 'action', actions: ['RIGHT'] }));
+  connection.send(JSON.stringify({ event: 'action', actions: ['FORWARD', 'RIGHT'] }));
 }
 upEl.onclick = () => {
   connection.send(JSON.stringify({ event: 'action', actions: ['FORWARD'] }));
 }
 downEl.onclick = () => {
-  connection.send(JSON.stringify({ event: 'action', actions: ['REVERSE'] }));
+  connection.send(JSON.stringify({ event: 'action', actions: ['BACKWARD'] }));
+}
+brakeEl.onclick = () => {
+  connection.send(JSON.stringify({ event: 'action', actions: ['BRAKE'] }));
 }
   
 </script>
