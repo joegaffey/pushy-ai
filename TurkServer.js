@@ -30,6 +30,10 @@ turkWsServer.on("connection", ws => {
     const message = JSON.parse(data);
     console.log(message);
     message.cid = ws.id;
+    if(message.event === 'action') {
+      if(ws.ai)
+        ws.ai.actions = message.actions;
+    }
     broadcast(turkWsServer, message);
   });
 
