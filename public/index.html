@@ -43,16 +43,22 @@ connection.onerror = function(e) {
  
 connection.onmessage = function(message) {
   const data = JSON.parse(message.data);
-  messageEl.innerHTML = '<br/>' + messageEl.innerHTML; 
   if(data.message) { 
+    messageEl.innerHTML = '<br/>' + messageEl.innerHTML; 
     messageEl.prepend('Client ' + data.cid + ': ' + data.message);
   }
   if(data.actions) {
+    messageEl.innerHTML = '<br/>' + messageEl.innerHTML; 
     messageEl.prepend('Client ' + data.cid + ': ' + data.actions);
+  }
+  else if(data.static) {
+    console.log(data.static);
+  }
+  else if(data.dynamic) {
+    // console.log(data.dynamic);
   }
 };
 
-  
 function send() {
   if(inputEl.value.trim().length < 1)
     return false;
