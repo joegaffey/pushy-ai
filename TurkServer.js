@@ -3,7 +3,7 @@ import { WebSocketServer } from 'ws';
 const turkWsServer = new WebSocketServer({ noServer: true });
 export default turkWsServer;
 
-const unassigned = [];
+const unassignedDrivers = [];
 
 function broadcast(server, data) {
   server.clients.forEach(client => {
@@ -13,13 +13,19 @@ function broadcast(server, data) {
   });
 }
 
-turkWsServer.getDriver = () => {
-  return unassigned.pop(); 
+turkWsServer.getDriver = (ai) => {
+  const driver = unassignedDrivers.pop();
+  if(driver) {
+    driver.ai = ai;
+    console.log('Driver assigned. ' + unassignedDrivers.length + ' drivers waiting!');
+  }
+  return driver; 
 }
 
 turkWsServer.on("connection", ws => {
   ws.id = Date.now();
-  unassigned.push(ws);
+  unassignedDrivers.push(ws);
+  console.log('New driver added. ' + unassignedDrivers.length + ' drivers waiting!');
   console.log('Turk' + turkWsServer.clients.size +' connected:', ws.id);
   
   const message = { cid: ws.id, message: 'Connected!' };
@@ -27,12 +33,14 @@ turkWsServer.on("connection", ws => {
   
   ws.on("message", data => {
     console.log("Message from connection Id:", ws.id);
+    
     const message = JSON.parse(data);
-    console.log(message);
     message.cid = ws.id;
+    
     if(message.event === 'action') {
-      if(ws.ai)
+      if(ws.ai) {
         ws.ai.actions = message.actions;
+      }
     }
     broadcast(turkWsServer, message);
   });

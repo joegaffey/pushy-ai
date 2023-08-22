@@ -6,7 +6,7 @@ import cors from 'cors';
 import url from 'node:url';
 
 import aiList from './aiList.js';
-import turkWsServer from './TurkServer.js';
+import turkServer from './TurkServer.js';
 import TurkAI from './TurkAI.js';
 
 const app = express();
@@ -28,7 +28,7 @@ const server = app.listen(process.env.PORT, () => {
 // AI socket servers
 const wsServers = [];
 
-const turkList = [];
+// const waitingTurks = [];
 
 aiList.forEach(ai => {
   import('./' + ai.agent).then((module) => {
@@ -36,18 +36,23 @@ aiList.forEach(ai => {
   }).catch((e) => {
     console.log('Error loading module ' + ai.agent, e);
   });
+  
   const wss = new WebSocketServer({ noServer: true });
   ai.wss = wss;
+  
   wss.on('connection', function connection(ws) {
-    ws.ai = new ai.module.default();
+    ws.ai = new ai.module.default();  // Instantiate the correct AI based on module
     ws.ai.name = ai.name;
     
     console.log(ws.ai.name + ': Connected');
     
-    if(ai.name === 'Turk') {
-      console.log(ws.ai)
-      turkList.push(ws.ai);
-    }
+    // if(ai.name === 'Turk') {
+    //   // const driver = turkServer.getDriver(ai);
+    //   // if(driver)
+    //   //   ws.ai.driver = driver;
+    //   // else
+    //     waitingTurks.push(ws.ai);
+    // }
     
     ws.on('error', console.error);
     
@@ -58,7 +63,7 @@ aiList.forEach(ai => {
       if(message.event === 'dynamicState') {        
         ai.messageCount++;
         if(ai.messageCount % 1000 === 0)
-          console.log(`${ai.name}: Received ${ai.messageCount / 1000}K world updates`);
+          console.log(`${ai.name}: Received ${ ai.messageCount / 1000 }K world updates`);
         ws.ai.setDynamicWorldState(message.objects);
       }
       if(message.event === 'staticState')
@@ -73,16 +78,8 @@ server.on('upgrade', function upgrade(request, socket, head) {
   const { pathname } = url.parse(request.url);
   
   if(pathname === '/driver') {
-    turkWsServer.handleUpgrade(request, socket, head, function done(ws) {
-      if(turkList.length > 0) {
-        ws.ai = turkList.pop();
-        const driver = turkWsServer.getDriver();
-        if(driver)
-          ws.ai.driver = driver;
-        else
-          console.log('Turk driver unavailable!')
-      }
-      turkWsServer.emit('connection', ws, request);
+    turkServer.handleUpgrade(request, socket, head, function done(ws) {
+      turkServer.emit('connection', ws, request);
     });
   }
   else {
