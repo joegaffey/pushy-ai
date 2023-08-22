@@ -1,3 +1,5 @@
+import turkWsServer from './TurkServer.js';
+
 export default class TurkAI {
   
   constructor() {
@@ -11,10 +13,18 @@ export default class TurkAI {
   
   setStaticWorldState(state) {
     console.log('Turk: Received static state:\n' + JSON.stringify(state));
+    if(!this.driver)
+      this.driver = turkWsServer.getDriver(this);
+    if(this.driver)
+      this.driver.send(JSON.stringify({ static: state }));
   }
   
   setDynamicWorldState(state) {
-    // console.log(JSON.stringify(state));
+    if(!this.driver) {
+      this.driver = turkWsServer.getDriver(this);
+    }
+    if(this.driver)
+      this.driver.send(JSON.stringify({ dynamic: state }));
   }
   
   setDeltaWorldState(state) {
