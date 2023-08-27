@@ -13,6 +13,9 @@ canvas {
   <button id="down">&darr;</button>
   <button id="brake">.</button>
 </div>
+<p>Angle: <span id="angle">0</span></p>
+<p>Max: <span id="max">0</span></p>
+<p>Min: <span id="min">0</span></p>
 <p>World view:</p>
 <canvas id="worldView" width="400" height="400" style="border:1px solid #000000;"></canvas>
 
@@ -79,27 +82,62 @@ connection.onmessage = function(message) {
   }
 };
   
+const angEl = document.getElementById('angle');
+const maxEl = document.getElementById('max');
+const minEl = document.getElementById('min');
+let max = 0, min = 0;      
+  
 function drawObjects(objects) {
-  const xOffset = 150;
-    const yOffset = 200;
-    const mult = 4;
-    objects.forEach(ob => {
+  const mult = 4;
+  const xOffset = 200;
+  const yOffset = 150;
+  objects.forEach(ob => {
     if(ob.type === 'zone') {
-      worldView.fillStyle = 'red';
+      if(ob.label === 'playerZone')
+        worldView.fillStyle = 'red';
+      else
+        worldView.fillStyle = '#999999';
       worldView.fillRect(ob.position.x * mult + xOffset - (ob.size.x * mult / 2), ob.position.z * mult - (ob.size.z * mult / 2) + yOffset, ob.size.x * mult, ob.size.z * mult);
     }
-    if(ob.type === 'box') {
+    else if(ob.type === 'platform') {
+      worldView.fillStyle = '#aaaaaa';
+      worldView.fillRect(ob.position.x * mult + xOffset - (ob.size.x * mult / 2), ob.position.z * mult - (ob.size.z * mult / 2) + yOffset, ob.size.x * mult, ob.size.z * mult);
+    }
+    else if(ob.type === 'wall') {
+      worldView.fillStyle = '#666666';
+      worldView.fillRect(ob.position.x * mult + xOffset - (ob.size.x * mult / 2), ob.position.z * mult - (ob.size.z * mult / 2) + yOffset, ob.size.x * mult, ob.size.z * mult);
+    }
+    else if(ob.type === 'box') {
       worldView.fillStyle = 'green';
       worldView.fillRect(ob.position.x * mult + xOffset, ob.position.z * mult + yOffset, 2 * mult, 2 * mult);
     }
-    if(ob.type === 'kart') {
-      worldView.fillStyle = 'blue';
-      // worldView.fillRect(ob.position.x * mult + xOffset, ob.position.z * mult + yOffset, 2 * mult, 4 * mult);
-      worldView.beginPath();
-      worldView.arc(ob.position.x * mult + xOffset, ob.position.z * mult + yOffset, 10, 0, 2 * Math.PI);
-      worldView.fill();
+    else if(ob.type === 'kart') {
+      worldView.fillStyle = 'blue';      
+      const x = ob.position.x * mult + xOffset;
+      const y = ob.position.z * mult + yOffset;
+      const width = 2 * mult;
+      const height = 4 * mult;
+      let angle = ob.orientation.y;
+      
+      fillRotatedRect(x, y, width, height, angle);
     }
   });
+}
+  
+function rotation_real_get(angle) {
+  while (angle < 0) 
+    angle += 2*Math.PI;
+  while (angle >= 2* Math.PI) 
+    angle = 2*Math.PI;
+  return angle;
+}
+  
+function fillRotatedRect(x, y, width, height, angle) {
+  worldView.save();
+  worldView.translate(x + width / 2, y + height / 2);
+  worldView.rotate(angle);
+  worldView.fillRect(-width / 2, -height / 2, width, height);
+  worldView.restore();    
 }
 
 function send() {
