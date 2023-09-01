@@ -1,7 +1,7 @@
 asyncapi: 2.6.0
 info:
   title: Pushy-AI API
-  version: 0.0.2
+  version: 0.0.3
   description: >
     WebSocket API for Pushy-AI physically based remote AI agents. Pushy-AI agents may be used to control Digital Twin simulations and real-world robots. Use this API to send state to the AI and receive AI actions.
 
@@ -120,6 +120,7 @@ components:
                   y: 0
                   z: 0
                 speed: 0
+                heading: 0
               - id: '1'
                 type: kart
                 label: enemyKart
@@ -136,6 +137,7 @@ components:
                   y: 0
                   z: 0
                 speed: 0
+                heading: 0
               - id: '2'
                 type: box
                 label: box
