@@ -1,18 +1,22 @@
 const aiList = [
   {
+    name: 'Homer',
+    type: 'local',
+  },
+  {
     name: 'Lefty',
+    type: 'remote',
     agent: 'LeftyAI.js',
-    messageCount: 0
   },
   {
     name: 'Righty',
+    type: 'remote',
     agent:  'RightyAI.js',
-    messageCount: 0
   },
   {
     name: 'Turk',
+    type: 'remote',
     agent:  'TurkAI.js',
-    messageCount: 0
   }
 ];
 
