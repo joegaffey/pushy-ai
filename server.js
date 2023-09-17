@@ -4,6 +4,7 @@ import { WebSocketServer } from 'ws';
 import express from 'express';
 import cors from 'cors';
 import url from 'node:url';
+import bodyParser from 'body-parser';
 
 import aiList from './aiList.js';
 import turkServer from './TurkServer.js';
@@ -11,13 +12,16 @@ import TurkAI from './TurkAI.js';
 
 const app = express();
 
-// app.use(cors({
-//   origin: ['https://studio.asyncapi.com', 
-//            'https://pushy-ai.glitch.me', 
-//            'https://pushy-ai-dev.glitch.me', 
-//            'https://pushy-karts.glitch.me', 
-//            'https://pushy-karts-dev.glitch.me']
-// }));
+app.use(cors({
+  origin: ['https://pushy-ai.glitch.me',
+           'https://pushy-ai-dev.glitch.me', 
+           'https://pushy-karts.glitch.me', 
+           'https://pushy-karts-dev.glitch.me'],
+  methods: ['POST', 'GET'],
+}));
+
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 
 app.use(express.static("public"));
 
@@ -25,10 +29,13 @@ const server = app.listen(process.env.PORT, () => {
   console.log("Listening on port " + server.address().port);
 });
 
+app.post('/logs', (req, res) => { 
+  console.log(('Client: ' + req.body.message));
+  res.json(req.body);
+});
+
 // AI socket servers
 const wsServers = [];
-
-// const waitingTurks = [];
 
 aiList.forEach(ai => {
   import('./' + ai.agent).then((module) => {
@@ -45,14 +52,6 @@ aiList.forEach(ai => {
     ws.ai.name = ai.name;
     
     console.log(ws.ai.name + ': Connected');
-    
-    // if(ai.name === 'Turk') {
-    //   // const driver = turkServer.getDriver(ai);
-    //   // if(driver)
-    //   //   ws.ai.driver = driver;
-    //   // else
-    //     waitingTurks.push(ws.ai);
-    // }
     
     ws.on('error', console.error);
     
