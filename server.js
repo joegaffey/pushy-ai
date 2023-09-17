@@ -34,10 +34,15 @@ app.post('/logs', (req, res) => {
   res.json(req.body);
 });
 
+app.get('/ai', (req, res) => { 
+  res.json(aiList);
+});
+
 // AI socket servers
 const wsServers = [];
 
-aiList.forEach(ai => {
+aiList.filter(ai => ai.type === 'remote').forEach(ai => {
+  ai.messageCount = 0;
   import('./' + ai.agent).then((module) => {
     ai.module = module;
   }).catch((e) => {
