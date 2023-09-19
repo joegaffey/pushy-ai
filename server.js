@@ -1,14 +1,12 @@
-import { createServer } from 'http';
-import { parse } from 'url';
 import { WebSocketServer } from 'ws';
 import express from 'express';
+import fetch from 'node-fetch';
 import cors from 'cors';
 import url from 'node:url';
 import bodyParser from 'body-parser';
+import { readFileSync } from 'fs';
 
-import aiList from './aiList.js';
 import turkServer from './TurkServer.js';
-import TurkAI from './TurkAI.js';
 
 const app = express();
 
@@ -26,8 +24,42 @@ app.use(bodyParser.json());
 app.use(express.static("public"));
 
 const server = app.listen(process.env.PORT, () => {
+  console.log(server.address().port || 8080)
   console.log("Listening on port " + server.address().port);
+  updateExternalAI();
 });
+
+setInterval(() =>  {
+  updateExternalAI();
+}, 5000);
+
+let externalAI = [];
+
+function updateExternalAI() {
+  externalAI = [];
+  config.externalAI.forEach(eAI => {
+    getAI(eAI).then((extAIList) => {
+      externalAI = externalAI.concat(extAIList);      
+      // console.log('Found ' + externalAI.length + ' external AI');
+    });
+  });
+}
+
+async function getAI(eAI) {
+  // console.log('Fetching external AI: ' + eAI);
+  try {
+    const response = await fetch(eAI, {
+      mode: 'cors',
+      headers: {
+        "Access-Control-Allow-Origin": "*"
+      },
+    });
+    return await response.json();
+  }
+  catch(e) {
+    console.log('AI request failed: ' + eAI + '\n', e);
+  };
+}
 
 app.post('/logs', (req, res) => { 
   console.log(('Client: ' + req.body.message));
@@ -35,8 +67,13 @@ app.post('/logs', (req, res) => {
 });
 
 app.get('/ai', (req, res) => { 
-  res.json(aiList);
+  const data = readFileSync('./ai.json');
+  const ai = JSON.parse(data).concat(externalAI)
+  res.json(ai);
 });
+
+let aiList = JSON.parse(readFileSync('./ai.json'));
+const config = JSON.parse(readFileSync('./config.json'));
 
 // AI socket servers
 const wsServers = [];
