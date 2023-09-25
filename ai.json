@@ -6,16 +6,16 @@
   {
     "name" : "Lefty",
     "type" : "remote",
-    "agent" : "LeftyAI.js"
+    "module" : "LeftyAI.js"
   },
   {
     "name": "Righty",
-    "type": "remote",
-    "agent":  "RightyAI.js"
+    "type": "external",
+    "path": "pushy-ai.glitch.me"
   },
   {
     "name": "Turk",
     "type": "remote",
-    "agent":  "TurkAI.js"
+    "module":  "TurkAI.js"
   }
 ]
