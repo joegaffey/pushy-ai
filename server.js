@@ -80,7 +80,7 @@ const wsServers = [];
 
 aiList.filter(ai => ai.type === 'remote').forEach(ai => {
   ai.messageCount = 0;
-  import('./' + ai.agent).then((module) => {
+  import('./' + ai.module).then((module) => {
     ai.module = module;
   }).catch((e) => {
     console.log('Error loading module ' + ai.agent, e);
