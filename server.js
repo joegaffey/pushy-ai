@@ -71,13 +71,19 @@ async function getAI(eAI) {
 let log = '';
 
 app.post('/logs', (req, res) => { 
-  console.log(('Client: ' + req.body.message));
+  console.log(('Client: ' + JSON.stringify(req.body.message)));
   log = req.body.message;
   res.json(req.body);
 });
 
-app.get('/metrics', (req, res) => { 
-  res.send(log);
+app.get('/metrics', (req, res) => {
+  let logStr = '';
+  if(log.scores) {
+    log.scores.forEach((score, i) => {
+      logStr += `scores{car="${ score.car }"} ${ score.score }\n`;
+    });
+  }
+  res.send(logStr);
 });
 
 app.get('/ai', (req, res) => { 
