@@ -8,6 +8,9 @@ import { readFileSync } from 'fs';
 
 import turkServer from './TurkServer.js';
 
+let aiList = JSON.parse(readFileSync('./ai.json'));
+const config = JSON.parse(readFileSync('./config.json'));
+
 const app = express();
 
 app.use(cors({
@@ -22,6 +25,9 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 app.use(express.static("public"));
+
+if(config.port)
+  process.env.PORT = config.port;
 
 const server = app.listen(process.env.PORT, () => {
   console.log(server.address().port || 8080)
@@ -61,9 +67,17 @@ async function getAI(eAI) {
   };
 }
 
+
+let log = '';
+
 app.post('/logs', (req, res) => { 
   console.log(('Client: ' + req.body.message));
+  log = req.body.message;
   res.json(req.body);
+});
+
+app.get('/metrics', (req, res) => { 
+  res.send(log);
 });
 
 app.get('/ai', (req, res) => { 
@@ -71,9 +85,6 @@ app.get('/ai', (req, res) => {
   const ai = JSON.parse(data).concat(externalAI)
   res.json(ai);
 });
-
-let aiList = JSON.parse(readFileSync('./ai.json'));
-const config = JSON.parse(readFileSync('./config.json'));
 
 // AI socket servers
 const wsServers = [];
