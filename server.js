@@ -68,21 +68,33 @@ async function getAI(eAI) {
 }
 
 
-let log = '';
+let logs = [];
 
 app.post('/logs', (req, res) => { 
   console.log(('Client: ' + JSON.stringify(req.body.message)));
-  log = req.body.message;
+  logs.push(req.body.message);
   res.json(req.body);
 });
 
 app.get('/metrics', (req, res) => {
   let logStr = '';
-  if(log.scores) {
-    log.scores.forEach((score, i) => {
-      logStr += `scores{car="${ score.car }"} ${ score.score }\n`;
-    });
-  }
+  logs.forEach(log => {
+    if(log.scores) {
+      log.scores.forEach((score, i) => {
+        logStr += `scores{car="${ score.car }" isAI="${ score.isAI }"} ${ score.score }\n`;
+      });
+    }
+    else if(log.crash) {
+      logStr += `crash{car1="${ log.crash.car1.name }" car1IsAi="${ log.crash.car1.isAI }" car1="${ log.crash.car2.name }" car2IsAi="${ log.crash.car2.isAI }"} 1\n`;
+    }
+    else if(log.wallHit) {
+      logStr += `wallHit{car="${ log.wallHit.car }" isAi="${ log.wallHit.isAI }"} 1\n`;
+    }
+    else if(log.point) {
+      logStr += `point{car="${ log.point.car }" isAi="${ log.point.isAI }"} 1\n`;
+    }
+  });
+  logs = [];
   res.send(logStr);
 });
 
