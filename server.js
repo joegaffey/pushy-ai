@@ -68,34 +68,64 @@ async function getAI(eAI) {
 }
 
 
-let logs = [];
+const metrics = { 
+  scores: {}, 
+  points: { 
+    ai: {},
+    human: {}
+  }, 
+  crashes: {
+    ai: {},
+    human: {}
+  }, 
+  wallHits: {
+    ai: {},
+    human: {}
+  }
+};
 
 app.post('/logs', (req, res) => { 
-  console.log(('Client: ' + JSON.stringify(req.body.message)));
-  logs.push(req.body.message);
+  const log = req.body.message;
+  console.log(('Client: ' + JSON.stringify(log)));
+  if(log.scores) {
+    metrics.scores = log.scores;
+  }
+  else if(log.point) {
+    if(log.point.isAI) {
+      if(!metrics.points.ai[log.point.car])
+        metrics.points.ai[log.point.car] = { car: log.point.car, points: 0 };
+      metrics.points.ai[log.point.car].points++;
+    }
+    else {
+      if(!metrics.points.human[log.point.car])
+        metrics.points.human[log.point.car] = { car: log.point.car, points: 0 };
+      metrics.points.human[log.point.car].points++;
+    }
+  }
   res.json(req.body);
 });
 
 app.get('/metrics', (req, res) => {
-  let logStr = '';
-  logs.forEach(log => {
-    if(log.scores) {
-      log.scores.forEach((score, i) => {
-        logStr += `scores{car="${ score.car }" isAI="${ score.isAI }"} ${ score.score }\n`;
-      });
-    }
-    else if(log.crash) {
-      logStr += `crash{car1="${ log.crash.car1.name }" car1IsAi="${ log.crash.car1.isAI }" car1="${ log.crash.car2.name }" car2IsAi="${ log.crash.car2.isAI }"} 1\n`;
-    }
-    else if(log.wallHit) {
-      logStr += `wallHit{car="${ log.wallHit.car }" isAi="${ log.wallHit.isAI }"} 1\n`;
-    }
-    else if(log.point) {
-      logStr += `point{car="${ log.point.car }" isAi="${ log.point.isAI }"} 1\n`;
-    }
-  });
-  logs = [];
-  res.send(logStr);
+  let metricsStr = '';
+    Object.keys(metrics.scores).forEach((key, i) => {
+      const score = metrics.scores[key];
+      metricsStr += `scores{car="${ score.car }" isAI="${ score.isAI }"} ${ score.score }\n`;
+    });
+    Object.keys(metrics.points.human).forEach((key, i) => {
+      const points = metrics.points.human[key];
+      metricsStr += `human_points{car="${ points.car }"}"${ points.points }"\n`;
+    });
+    Object.keys(metrics.points.ai).forEach((key, i) => {
+      const points = metrics.points.ai[key];
+      metricsStr += `ai_points{car="${ points.car }"}"${ points.points }"\n`;
+    });
+    // else if(log.crash) {
+    //   metricsStr += `crash{car1="${ log.crash.car1.name }" car1IsAi="${ log.crash.car1.isAI }" car1="${ log.crash.car2.name }" car2IsAi="${ log.crash.car2.isAI }"} 1\n`;
+    // }
+    // else if(log.wallHit) {
+    //   metricsStr += `wallHit{car="${ log.wallHit.car }" isAi="${ log.wallHit.isAI }"} 1\n`;
+    // }
+  res.send(metricsStr);
 });
 
 app.get('/ai', (req, res) => { 
