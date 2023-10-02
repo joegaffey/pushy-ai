@@ -113,11 +113,11 @@ app.get('/metrics', (req, res) => {
     });
     Object.keys(metrics.points.human).forEach((key, i) => {
       const points = metrics.points.human[key];
-      metricsStr += `human_points{car="${ points.car }"}"${ points.points }"\n`;
+      metricsStr += `human_points{car="${ points.car }"} ${ points.points }\n`;
     });
     Object.keys(metrics.points.ai).forEach((key, i) => {
       const points = metrics.points.ai[key];
-      metricsStr += `ai_points{car="${ points.car }"}"${ points.points }"\n`;
+      metricsStr += `ai_points{car="${ points.car }"} ${ points.points }\n`;
     });
     // else if(log.crash) {
     //   metricsStr += `crash{car1="${ log.crash.car1.name }" car1IsAi="${ log.crash.car1.isAI }" car1="${ log.crash.car2.name }" car2IsAi="${ log.crash.car2.isAI }"} 1\n`;
