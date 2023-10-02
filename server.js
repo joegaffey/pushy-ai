@@ -67,7 +67,6 @@ async function getAI(eAI) {
   };
 }
 
-
 const metrics = { 
   scores: {}, 
   points: { 
@@ -102,6 +101,40 @@ app.post('/logs', (req, res) => {
       metrics.points.human[log.point.car].points++;
     }
   }
+  else if(log.wallHit) {
+    if(log.wallHit.isAI) {
+      if(!metrics.wallHits.ai[log.wallHit.car])
+        metrics.wallHits.ai[log.wallHit.car] = { car: log.wallHit.car, wallHits: 0 };
+      metrics.wallHits.ai[log.wallHit.car].wallHits++;
+    }
+    else {
+      if(!metrics.wallHits.human[log.wallHit.car])
+        metrics.wallHits.human[log.wallHit.car] = { car: log.wallHit.car, wallHits: 0 };
+      metrics.wallHits.human[log.wallHit.car].wallHits++;
+    }
+  }
+  else if(log.crash) {
+    if(log.crash.car1.isAI) {
+      if(!metrics.crashes.ai[log.crash.car1.name])
+        metrics.crashes.ai[log.crash.car1.name] = { car: log.crash.car1.name, crashes: 0 };
+      metrics.crashes.ai[log.crash.car1.name].crashes++;
+    }
+    else {
+      if(!metrics.crashes.human[log.crash.car1.name])
+        metrics.crashes.human[log.crash.car1.name] = { car: log.crash.car1.name, crashes: 0 };
+      metrics.crashes.human[log.crash.car1.name].crashes++;
+    }
+    if(log.crash.car2.isAI) {
+      if(!metrics.crashes.ai[log.crash.car2.name])
+        metrics.crashes.ai[log.crash.car2.name] = { car: log.crash.car2.name, crashes: 0 };
+      metrics.crashes.ai[log.crash.car2.name].crashes++;
+    }
+    else {
+      if(!metrics.crashes.human[log.crash.car2.name])
+        metrics.crashes.human[log.crash.car2.name] = { car: log.crash.car2.name, crashes: 0 };
+      metrics.crashes.human[log.crash.car2.name].crashes++;
+    }
+  }
   res.json(req.body);
 });
 
@@ -119,12 +152,22 @@ app.get('/metrics', (req, res) => {
       const points = metrics.points.ai[key];
       metricsStr += `ai_points{car="${ points.car }"} ${ points.points }\n`;
     });
-    // else if(log.crash) {
-    //   metricsStr += `crash{car1="${ log.crash.car1.name }" car1IsAi="${ log.crash.car1.isAI }" car1="${ log.crash.car2.name }" car2IsAi="${ log.crash.car2.isAI }"} 1\n`;
-    // }
-    // else if(log.wallHit) {
-    //   metricsStr += `wallHit{car="${ log.wallHit.car }" isAi="${ log.wallHit.isAI }"} 1\n`;
-    // }
+    Object.keys(metrics.wallHits.human).forEach((key, i) => {
+      const wallHits = metrics.wallHits.human[key];
+      metricsStr += `human_wallHits{car="${ wallHits.car }"} ${ wallHits.wallHits }\n`;
+    });
+    Object.keys(metrics.wallHits.ai).forEach((key, i) => {
+      const wallHits = metrics.wallHits.ai[key];
+      metricsStr += `ai_wallHits{car="${ wallHits.car }"} ${ wallHits.wallHits }\n`;
+    });
+    Object.keys(metrics.crashes.human).forEach((key, i) => {
+      const crashes = metrics.crashes.human[key];
+      metricsStr += `human_crashes{car="${ crashes.car }"} ${ crashes.crashes }\n`;
+    });
+    Object.keys(metrics.crashes.ai).forEach((key, i) => {
+      const crashes = metrics.crashes.ai[key];
+      metricsStr += `ai_crashes{car="${ crashes.car }"} ${ crashes.crashes }\n`;
+    });
   res.send(metricsStr);
 });
 
